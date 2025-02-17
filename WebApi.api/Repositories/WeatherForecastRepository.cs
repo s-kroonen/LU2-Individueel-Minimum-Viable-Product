@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using WebApi.api.Models;
 
 namespace WebApi.api.Repositories
 {

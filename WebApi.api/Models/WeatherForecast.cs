@@ -1,4 +1,4 @@
-namespace WebApi.api;
+namespace WebApi.api.Models;
 
 public class WeatherForecast
 {
