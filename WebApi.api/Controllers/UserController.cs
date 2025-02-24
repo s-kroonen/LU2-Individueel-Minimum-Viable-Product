@@ -1,105 +1,86 @@
 using Microsoft.AspNetCore.Mvc;
-//using WebApi.api.Models;
-using System;
 using WebApi.api.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using WebApi.api.Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
-namespace WebApi.api.Controllers;
-
-[ApiController]
-[Route("")]
-public class UserController : ControllerBase
+namespace WebApi.api.Controllers
 {
-    private static List<User> users = new List<User>()
+    [ApiController]
+    [Route("api/users")]
+    public class UserController : ControllerBase
     {
-        new User()
+        private readonly UserRepository _userRepository;
+        private readonly ILogger<UserController> _logger;
+
+        public UserController(UserRepository userRepository, ILogger<UserController> logger)
         {
-            Username = "Bob",
-            Password = "Bob-123"
-        },
-        new User()
-        {
-            Username = "John",
-            Password = "I<3-C#"
-        },
-        new User()
-        {
-            Username = "Steve",
-            Password = "123-Steve"
-        }
-    };
-
-
-    private readonly ILogger<WeatherForecastController> _logger;
-
-    public UserController(ILogger<WeatherForecastController> logger)
-    {
-        _logger = logger;
-    }
-
-    [HttpGet(Name = "ReadUsers")]
-    public ActionResult<IEnumerable<User>> Get()
-    {
-        return users;
-    }
-
-    [HttpGet("{username:datetime}", Name = "ReadWeatherForecastByDate")]
-    public ActionResult<User> Get(string username)
-    {
-        User user = GetUser(username);
-        if (user == null)
-            return NotFound();
-
-        return user;
-    }
-
-
-    [HttpPost(Name = "CreateWeatherForecast")]
-    public ActionResult Add(User user)
-    {
-        if (GetUser(user.Username) != null)
-            return BadRequest("User with name" + user.Username + " already exists.");
-
-        users.Add(user);
-        return Created();
-    }
-
-
-    [HttpPut("{username:string}", Name = "UpdateUser")]
-    public IActionResult Update(string username, User newUser)
-    {
-        if (username != newUser.Username)
-            return BadRequest("The id of the object did not match the id of the route");
-
-        User userToUpdate = GetUser(newUser.Username);
-        if (userToUpdate == null)
-            return NotFound();
-
-        users.Remove(userToUpdate);
-        users.Add(newUser);
-
-        return Ok();
-    }
-
-    [HttpDelete("{username:string}", Name = "DeleteUser")]
-    public IActionResult Update(string username)
-    {
-        User userToDelete = GetUser(username);
-        if (userToDelete == null)
-            return NotFound();
-
-        users.Remove(userToDelete);
-        return Ok();
-    }
-
-    private User GetUser(string username)
-    {
-        foreach (User user in users)
-        {
-            if (user.Username == username)
-                return user;
+            _userRepository = userRepository;
+            _logger = logger;
         }
 
-        return null;
+        // GET ALL USERS
+        [HttpGet(Name = "ReadUsers")]
+        public async Task<ActionResult<IEnumerable<User>>> Get()
+        {
+            var users = await _userRepository.ReadAsync();
+            return Ok(users);
+        }
+
+        // GET SINGLE USER
+        [HttpGet("{username}", Name = "ReadUser")]
+        public async Task<ActionResult<User>> Get(string username)
+        {
+            var user = await _userRepository.ReadAsync(username);
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
+        }
+
+        // CREATE NEW USER
+        [HttpPost(Name = "CreateUser")]
+        public async Task<ActionResult<User>> Add(User user)
+        {
+            var existingUser = await _userRepository.ReadAsync(user.Username);
+            if (existingUser != null)
+                return BadRequest("User with that username already exists.");
+
+            var createdUser = await _userRepository.InsertAsync(user);
+            if (createdUser == null)
+                return StatusCode(500, "Failed to create user");
+
+            return CreatedAtAction(nameof(Get), new { username = createdUser.Username }, createdUser);
+        }
+
+        // UPDATE USER (only password can be changed)
+        [HttpPut("{username}", Name = "UpdateUser")]
+        public async Task<IActionResult> Update(string username, User newUser)
+        {
+            if (username != newUser.Username)
+                return BadRequest("The username in the URL does not match the object");
+
+            var existingUser = await _userRepository.ReadAsync(username);
+            if (existingUser == null)
+                return NotFound();
+
+            var updatedUser = await _userRepository.UpdateAsync(newUser);
+            if (updatedUser == null)
+                return StatusCode(500, "Failed to update user");
+
+            return NoContent();
+        }
+
+        // DELETE USER
+        [HttpDelete("{username}", Name = "DeleteUser")]
+        public async Task<IActionResult> Delete(string username)
+        {
+            var deletedUser = await _userRepository.DeleteAsync(username);
+            if (deletedUser == null)
+                return NotFound();
+
+            return Ok(deletedUser);
+        }
     }
 }

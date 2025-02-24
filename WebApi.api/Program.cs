@@ -10,6 +10,7 @@ builder.Services.AddOpenApi();
 
 var sqlConnectionString = builder.Configuration["SqlConnectionString"];
 builder.Services.AddTransient<WeatherForecastRepository, WeatherForecastRepository>(o => new WeatherForecastRepository(sqlConnectionString));
+builder.Services.AddTransient<UserRepository, UserRepository>(o => new UserRepository(sqlConnectionString));
 
 
 var app = builder.Build();
