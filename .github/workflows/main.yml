@@ -31,6 +31,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }} 
         source: "out/*"
         target: "/var/www/webapi"  # Change to your server's web directory
 
@@ -40,5 +41,6 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }} 
         script: |
           sudo systemctl restart webapi.service  # Replace with your service
