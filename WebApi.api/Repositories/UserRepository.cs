@@ -50,8 +50,6 @@ namespace WebApi.api.Repositories
                 return null;
             }
         }
-}
-}
 
 
         // READ: Returns the found User, or null if not found
