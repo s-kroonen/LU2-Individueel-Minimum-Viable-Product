@@ -1,8 +1,17 @@
 using Dapper;
-using Microsoft.Data.SqlClient;
+using System.Data;
+using System.Data.Common;
+
+#if DEBUG
+using Microsoft.Data.SqlClient; // Gebruik MSSQL in DEBUG
+#else
+using MySql.Data.MySqlClient; // Gebruik MySQL in productie
+#endif
+
 using WebApi.api.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
 
 namespace WebApi.api.Repositories
 {
@@ -10,27 +19,42 @@ namespace WebApi.api.Repositories
     {
         private readonly string sqlConnectionString;
         private readonly ILogger<UserRepository> _logger;
+        private readonly bool isMySql; // Controle of we MySQL gebruiken
 
         public UserRepository(string sqlConnectionString, ILogger<UserRepository> logger)
         {
             this.sqlConnectionString = sqlConnectionString;
             _logger = logger;
+#if DEBUG
+            isMySql = false;  // MSSQL in debug-modus
+#else
+            isMySql = true;   // MySQL in productie
+#endif
         }
 
-        // INSERT: Returns the inserted User, or null if failedil: WebApi.api.Controllers.UserController[0] 
+        // Helper method om een database-verbinding te maken
+        private DbConnection CreateConnection()
+        {
+            return isMySql
+                ? new MySqlConnection(sqlConnectionString)
+                : new SqlConnection(sqlConnectionString);
+        }
 
+        // INSERT: Returns the inserted User, or null if failed
         public async Task<User?> InsertAsync(User user)
         {
             try
             {
-                using (var sqlConnection = new SqlConnection(sqlConnectionString))
+                using (var dbConnection = CreateConnection())
                 {
-                    await sqlConnection.OpenAsync();
-                    _logger.LogWarning("Connection opend");
-                    var rowsAffected = await sqlConnection.ExecuteAsync(
-                        "INSERT INTO Users (username, password) VALUES (@Username, @Password)",
-                        user
-                    );
+                    await dbConnection.OpenAsync();
+                    _logger.LogInformation("Database connection opened.");
+
+                    string query = isMySql
+                        ? "INSERT INTO Users (username, password) VALUES (@Username, @Password)"
+                        : "INSERT INTO Users (username, password) VALUES (@Username, @Password)";
+
+                    var rowsAffected = await dbConnection.ExecuteAsync(query, user);
 
                     if (rowsAffected > 0)
                     {
@@ -51,18 +75,20 @@ namespace WebApi.api.Repositories
             }
         }
 
-
         // READ: Returns the found User, or null if not found
         public async Task<User?> ReadAsync(string username)
         {
             try
             {
-                using (var sqlConnection = new SqlConnection(sqlConnectionString))
+                using (var dbConnection = CreateConnection())
                 {
-                    return await sqlConnection.QuerySingleOrDefaultAsync<User>(
-                        "SELECT * FROM [Users] WHERE username = @Username",
-                        new { Username = username }
-                    );
+                    await dbConnection.OpenAsync();
+
+                    string query = isMySql
+                        ? "SELECT * FROM Users WHERE username = @Username"
+                        : "SELECT * FROM Users WHERE username = @Username";
+
+                    return await dbConnection.QuerySingleOrDefaultAsync<User>(query, new { Username = username });
                 }
             }
             catch
@@ -76,9 +102,15 @@ namespace WebApi.api.Repositories
         {
             try
             {
-                using (var sqlConnection = new SqlConnection(sqlConnectionString))
+                using (var dbConnection = CreateConnection())
                 {
-                    return await sqlConnection.QueryAsync<User>("SELECT * FROM [Users]");
+                    await dbConnection.OpenAsync();
+
+                    string query = isMySql
+                        ? "SELECT * FROM Users"
+                        : "SELECT * FROM Users";
+
+                    return await dbConnection.QueryAsync<User>(query);
                 }
             }
             catch
@@ -92,13 +124,15 @@ namespace WebApi.api.Repositories
         {
             try
             {
-                using (var sqlConnection = new SqlConnection(sqlConnectionString))
+                using (var dbConnection = CreateConnection())
                 {
-                    var rowsAffected = await sqlConnection.ExecuteAsync(
-                        "UPDATE [Users] SET password = @Password WHERE username = @Username",
-                        user
-                    );
+                    await dbConnection.OpenAsync();
 
+                    string query = isMySql
+                        ? "UPDATE Users SET password = @Password WHERE username = @Username"
+                        : "UPDATE Users SET password = @Password WHERE username = @Username";
+
+                    var rowsAffected = await dbConnection.ExecuteAsync(query, user);
                     return rowsAffected > 0 ? user : null;
                 }
             }
@@ -113,17 +147,18 @@ namespace WebApi.api.Repositories
         {
             try
             {
-                using (var sqlConnection = new SqlConnection(sqlConnectionString))
+                using (var dbConnection = CreateConnection())
                 {
-                    // Read the user before deleting (to return it if successful)
+                    await dbConnection.OpenAsync();
+
                     var userToDelete = await ReadAsync(username);
                     if (userToDelete == null) return null;
 
-                    var rowsAffected = await sqlConnection.ExecuteAsync(
-                        "DELETE FROM [Users] WHERE username = @Username",
-                        new { Username = username }
-                    );
+                    string query = isMySql
+                        ? "DELETE FROM Users WHERE username = @Username"
+                        : "DELETE FROM Users WHERE username = @Username";
 
+                    var rowsAffected = await dbConnection.ExecuteAsync(query, new { Username = username });
                     return rowsAffected > 0 ? userToDelete : null;
                 }
             }
