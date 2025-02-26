@@ -39,20 +39,39 @@ namespace WebApi.api.Controllers
             return Ok(user);
         }
 
-        // CREATE NEW USER
         [HttpPost(Name = "CreateUser")]
         public async Task<ActionResult<User>> Add(User user)
         {
-            var existingUser = await _userRepository.ReadAsync(user.Username);
-            if (existingUser != null)
-                return BadRequest("User with that username already exists.");
+            _logger.LogInformation("Received request to add user: {@User}", user);
 
-            var createdUser = await _userRepository.InsertAsync(user);
-            if (createdUser == null)
-                return StatusCode(500, "Failed to create user");
+            try
+            {
+                var existingUser = await _userRepository.ReadAsync(user.Username);
+                if (existingUser != null)
+                {
+                    _logger.LogWarning("User with username {Username} already exists.", user.Username);
+                    return BadRequest("User with that username already exists.");
+                }
 
-            return CreatedAtAction(nameof(Get), new { username = createdUser.Username }, createdUser);
+                _logger.LogInformation("Inserting new user into database.");
+                var createdUser = await _userRepository.InsertAsync(user);
+
+                if (createdUser == null)
+                {
+                    _logger.LogError("InsertAsync returned null, failed to create user.");
+                    return StatusCode(500, "Failed to create user");
+                }
+
+                _logger.LogInformation("User created successfully: {Username}", createdUser.Username);
+                return CreatedAtAction(nameof(Get), new { username = createdUser.Username }, createdUser);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while creating user.");
+                return StatusCode(500, "An unexpected error occurred.");
+            }
         }
+
 
         // UPDATE USER (only password can be changed)
         [HttpPut("{username}", Name = "UpdateUser")]
