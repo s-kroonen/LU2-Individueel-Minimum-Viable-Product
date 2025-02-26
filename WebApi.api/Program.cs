@@ -9,6 +9,11 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var sqlConnectionString = builder.Configuration["SqlConnectionString"];
+
+var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
+var logger = loggerFactory.CreateLogger("Startup");
+logger.LogInformation($"Using SQL Connection String: {sqlConnectionString}");
+
 builder.Services.AddTransient<WeatherForecastRepository, WeatherForecastRepository>(o => new WeatherForecastRepository(sqlConnectionString));
 builder.Services.AddTransient<UserRepository, UserRepository>(o => new UserRepository(sqlConnectionString));
 
