@@ -15,7 +15,8 @@ namespace WebApi.api.Repositories
             this.sqlConnectionString = sqlConnectionString;
         }
 
-        // INSERT: Returns the inserted User, or null if failed
+        // INSERT: Returns the inserted User, or null if failedil: WebApi.api.Controllers.UserController[0] 
+
         public async Task<User?> InsertAsync(User user)
         {
             try
@@ -23,6 +24,7 @@ namespace WebApi.api.Repositories
                 using (var sqlConnection = new SqlConnection(sqlConnectionString))
                 {
                     await sqlConnection.OpenAsync();
+                    Console.WriteLine("Connected successfully to database!");
                     var rowsAffected = await sqlConnection.ExecuteAsync(
                         "INSERT INTO Users (username, password) VALUES (@Username, @Password)",
                         user
