@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using WebApi.api.Models;
 using System.Collections.Generic;
@@ -26,6 +26,7 @@ namespace WebApi.api.Repositories
                 using (var sqlConnection = new SqlConnection(sqlConnectionString))
                 {
                     await sqlConnection.OpenAsync();
+                    _logger.LogWarning("Connection opend");
                     var rowsAffected = await sqlConnection.ExecuteAsync(
                         "INSERT INTO Users (username, password) VALUES (@Username, @Password)",
                         user
