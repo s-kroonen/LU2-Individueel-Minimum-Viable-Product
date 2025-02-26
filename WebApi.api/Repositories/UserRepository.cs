@@ -24,18 +24,20 @@ namespace WebApi.api.Repositories
                 {
                     await sqlConnection.OpenAsync();
                     var rowsAffected = await sqlConnection.ExecuteAsync(
-                        "INSERT INTO [Users] (username, password) VALUES (@Username, @Password)",
+                        "INSERT INTO Users (username, password) VALUES (@Username, @Password)",
                         user
                     );
 
                     return rowsAffected > 0 ? user : null;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error inserting user: {ex.Message}");
                 return null;
             }
         }
+
 
         // READ: Returns the found User, or null if not found
         public async Task<User?> ReadAsync(string username)
