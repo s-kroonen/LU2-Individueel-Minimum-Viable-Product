@@ -35,9 +35,11 @@ namespace WebApi.api.Repositories
         // Helper method om een database-verbinding te maken
         private DbConnection CreateConnection()
         {
-            return isMySql
-                ? new MySqlConnection(sqlConnectionString)
-                : new SqlConnection(sqlConnectionString);
+#if !DEBUG
+            return new MySqlConnection(sqlConnectionString);
+#else
+            return new SqlConnection(sqlConnectionString);
+#endif
         }
 
         // INSERT: Returns the inserted User, or null if failed
