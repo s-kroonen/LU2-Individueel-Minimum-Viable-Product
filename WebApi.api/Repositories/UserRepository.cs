@@ -11,7 +11,6 @@ using MySql.Data.MySqlClient; // Gebruik MySQL in productie
 using WebApi.api.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
 
 namespace WebApi.api.Repositories
 {
