@@ -49,29 +49,16 @@ namespace WebApi.api.Repositories
                 using (var dbConnection = CreateConnection())
                 {
                     await dbConnection.OpenAsync();
-                    _logger.LogInformation("Database connection opened.");
-
                     string query = isMySql
                         ? "INSERT INTO Users (username, password) VALUES (@Username, @Password)"
                         : "INSERT INTO Users (username, password) VALUES (@Username, @Password)";
 
-                    var rowsAffected = await dbConnection.ExecuteAsync(query, user);
-
-                    if (rowsAffected > 0)
-                    {
-                        _logger.LogInformation("Insert successful for user: {Username}", user.Username);
-                        return user;
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Insert failed: No rows affected.");
-                        return null;
-                    }
+                    return await dbConnection.QuerySingleOrDefaultAsync<User>(query, user);
                 }
+
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error inserting user: {Username}", user.Username);
                 return null;
             }
         }

@@ -3,44 +3,63 @@ name: Deploy ASP.NET to Custom Server
 on:
   push:
     branches:
-      - main  # Change to the branch you want to trigger deployment
-  workflow_dispatch:  # Allows manual triggering
+      - main
+  workflow_dispatch:
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0'  # Pas aan op basis van jouw project
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet publish -c Release -o out
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: published-app
+          path: out
+
   deploy:
     runs-on: ubuntu-latest
-
+    needs: build  # Wacht op succesvolle build voordat het deployt
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: published-app
+          path: out
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '9.0'  # Change based on your project
+      - name: Deploy to Server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "out/*"
+          target: "/var/www/webapi"
 
-    - name: Restore dependencies
-      run: dotnet restore
-
-    - name: Build project
-      run: dotnet publish -c Release -o out
-
-    - name: Deploy to Server via SCP
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.SSH_PORT }} 
-        source: "out/*"
-        target: "/var/www/webapi"  # Change to your server's web directory
-
-    - name: Restart Server Service
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.SSH_PORT }} 
-        script: |
-          sudo systemctl restart webapi.service  # Replace with your service
+  run:
+    runs-on: ubuntu-latest
+    needs: deploy  # Wacht tot de deployment klaar is
+    steps:
+      - name: Restart Server Service
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            sudo systemctl restart webapi.service
