@@ -9,10 +9,12 @@ namespace WebApi.api.Repositories
     public class UserRepository
     {
         private readonly string sqlConnectionString;
+        private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(string sqlConnectionString)
+        public UserRepository(string sqlConnectionString, ILogger<UserRepository> logger)
         {
             this.sqlConnectionString = sqlConnectionString;
+            _logger = logger;
         }
 
         // INSERT: Returns the inserted User, or null if failedil: WebApi.api.Controllers.UserController[0] 
@@ -24,21 +26,31 @@ namespace WebApi.api.Repositories
                 using (var sqlConnection = new SqlConnection(sqlConnectionString))
                 {
                     await sqlConnection.OpenAsync();
-                    Console.WriteLine("Connected successfully to database!");
                     var rowsAffected = await sqlConnection.ExecuteAsync(
                         "INSERT INTO Users (username, password) VALUES (@Username, @Password)",
                         user
                     );
 
-                    return rowsAffected > 0 ? user : null;
+                    if (rowsAffected > 0)
+                    {
+                        _logger.LogInformation("Insert successful for user: {Username}", user.Username);
+                        return user;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Insert failed: No rows affected.");
+                        return null;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error inserting user: {ex.Message}");
+                _logger.LogError(ex, "Error inserting user: {Username}", user.Username);
                 return null;
             }
         }
+}
+}
 
 
         // READ: Returns the found User, or null if not found
