@@ -62,4 +62,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            sudo systemctl restart webapi.service
+            sudo systemctl restart myapp.service
