@@ -1,20 +1,20 @@
-using WebApi.api.Repositories;
-using Avans.Identity.Dapper;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
+using WebApi.api.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+// Add services to the container.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<IAuthenticationService, AspNetIdentityAuthenticationService>();
 
+builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-var sqlConnectionString = builder.Configuration["SqlConnectionString"];
+var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionString");
 
-var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
-var logger = loggerFactory.CreateLogger("Startup");
-logger.LogInformation($"Using SQL Connection String: {sqlConnectionString}");
-
-builder.Services.AddAuthorization();
 builder.Services
     .AddIdentityApiEndpoints<IdentityUser>()
     .AddDapperStores(options =>
@@ -22,13 +22,15 @@ builder.Services
         options.ConnectionString = sqlConnectionString;
     });
 
-builder.Services.AddTransient<WeatherForecastRepository, WeatherForecastRepository>(o => new WeatherForecastRepository(sqlConnectionString));
+builder.Services.AddTransient<Environment2DRepository, Environment2DRepository>(o => new Environment2DRepository(sqlConnectionString));
+builder.Services.AddTransient<Object2DRepository, Object2DRepository>(o => new Object2DRepository(sqlConnectionString));
 
+var sqlConnectionStringFound = !string.IsNullOrWhiteSpace(sqlConnectionString);
 
 var app = builder.Build();
 
+app.MapGet("/", () => $"The API is up success. Connection string found: {(sqlConnectionStringFound ? "yes" : "no")}");
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -38,6 +40,10 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapGroup("/account")
+.MapIdentityApi<IdentityUser>();
+
+app.MapControllers()
+    .RequireAuthorization();
 
 app.Run();
