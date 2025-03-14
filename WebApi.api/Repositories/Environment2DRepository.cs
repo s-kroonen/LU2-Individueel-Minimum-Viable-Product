@@ -17,14 +17,14 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                if (environment2D.EnvironmentId == Guid.Empty)
+                if (environment2D.id == Guid.Empty)
                 {
-                    environment2D.EnvironmentId = Guid.NewGuid();
+                    environment2D.id = Guid.NewGuid();
                 }
 
                 environment2D.UserId = userId;
 
-                await sqlConnection.ExecuteAsync("INSERT INTO [environmentTable] (EnvironmentId, UserId, Name) VALUES (@EnvironmentId, @UserId, @Name)", environment2D);
+                await sqlConnection.ExecuteAsync("INSERT INTO [environmentTable] (id, UserId, Name) VALUES (@id, @UserId, @Name)", environment2D);
                 return environment2D;
             }
         }
@@ -34,7 +34,7 @@ namespace WebApi.api.Repositories
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
                 string environment2DString = environment2DGuid.ToString();
-                return await sqlConnection.QuerySingleOrDefaultAsync<Environment2D>("SELECT * FROM [environmentTable] WHERE EnvironmentId = @EnvironmentId", new { EnvironmentId = environment2DString });
+                return await sqlConnection.QuerySingleOrDefaultAsync<Environment2D>("SELECT * FROM [environmentTable] WHERE id = @id", new { EnvironmentId = environment2DString });
             }
         }
 
@@ -43,7 +43,7 @@ namespace WebApi.api.Repositories
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
                 Guid environment2DGuid = Guid.Parse(environment2DString);
-                return await sqlConnection.QuerySingleOrDefaultAsync<Environment2D>("SELECT * FROM [environmentTable] WHERE EnvironmentId = @EnvironmentId", new { EnvironmentId = environment2DGuid });
+                return await sqlConnection.QuerySingleOrDefaultAsync<Environment2D>("SELECT * FROM [environmentTable] WHERE id = @id", new { EnvironmentId = environment2DGuid });
             }
         }
 
@@ -54,7 +54,7 @@ namespace WebApi.api.Repositories
                 var environments = await sqlConnection.QueryAsync<Environment2D>("SELECT * FROM [environmentTable] WHERE UserId = @UserId", new { UserId = userId });
                 return environments.Select(e => new Environment2D
                 {
-                    EnvironmentId = e.EnvironmentId,
+                    id = e.id,
                     UserId = e.UserId,
                     Name = e.Name
                 });
@@ -68,7 +68,7 @@ namespace WebApi.api.Repositories
                 var environments = await sqlConnection.QueryAsync<Environment2D>("SELECT * FROM [environmentTable]");
                 return environments.Select(e => new Environment2D
                 {
-                    EnvironmentId = e.EnvironmentId,
+                    id = e.id,
                     UserId = e.UserId,
                     Name = e.Name
                 });
@@ -81,7 +81,7 @@ namespace WebApi.api.Repositories
             {
                 await sqlConnection.ExecuteAsync("UPDATE [environmentTable] SET " +
                                                  "Name = @Name " +
-                                                 "WHERE EnvironmentId = @EnvironmentId", environment2D);
+                                                 "WHERE id = @id", environment2D);
             }
         }
 
@@ -89,7 +89,7 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                await sqlConnection.ExecuteAsync("DELETE FROM [environmentTable] WHERE EnvironmentId = @EnvironmentId", new { EnvironmentId = environment2D });
+                await sqlConnection.ExecuteAsync("DELETE FROM [environmentTable] WHERE id = @id", new { EnvironmentId = environment2D });
             }
         }
 
@@ -97,7 +97,7 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                await sqlConnection.ExecuteAsync("DELETE FROM [environmentTable] WHERE EnvironmentId = @EnvironmentId", new { EnvironmentId = environment2D });
+                await sqlConnection.ExecuteAsync("DELETE FROM [environmentTable] WHERE id = @id", new { EnvironmentId = environment2D });
             }
         }
     }
