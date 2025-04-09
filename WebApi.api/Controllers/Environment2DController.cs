@@ -31,7 +31,7 @@ public class Environment2DController : ControllerBase
     }
 
     [HttpGet("{environmentId}")]
-    public async Task<IActionResult> GetEnvironment2D(string environmentId)
+    public async Task<IActionResult> GetEnvironment2D(Guid environmentId)
     {
         var environment2D = await _environment2DRepository.ReadAsync(environmentId);
         if (environment2D == null)
@@ -40,7 +40,7 @@ public class Environment2DController : ControllerBase
         return Ok(environment2D);
     }
 
-    [HttpGet]
+    [HttpGet] 
     public async Task<IActionResult> GetEnvironment2DByUser()
     {
         var userId = _authenticationService.GetCurrentAuthenticatedUserId();
@@ -52,7 +52,7 @@ public class Environment2DController : ControllerBase
     }
 
     [HttpPut("{environmentId}")]
-    public async Task<IActionResult> UpdateEnvironment2D(string environmentId, [FromBody] Environment2D environment2D)
+    public async Task<IActionResult> UpdateEnvironment2D(Guid environmentId, [FromBody] Environment2D environment2D)
     {
         var existingEnvironment = await _environment2DRepository.ReadAsync(environmentId);
         if (existingEnvironment == null)
