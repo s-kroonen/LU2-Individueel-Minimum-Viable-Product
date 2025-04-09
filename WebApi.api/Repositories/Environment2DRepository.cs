@@ -89,7 +89,7 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                await sqlConnection.ExecuteAsync("DELETE FROM [environmentTable] WHERE id = @id", new { EnvironmentId = environment2D });
+                await sqlConnection.ExecuteAsync("DELETE FROM [environmentTable] WHERE id = @id", new { id = environment2D });
             }
         }
 
@@ -97,7 +97,7 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                await sqlConnection.ExecuteAsync("DELETE FROM [environmentTable] WHERE id = @id", new { EnvironmentId = environment2D });
+                await sqlConnection.ExecuteAsync("DELETE FROM [environmentTable] WHERE id = @id", new { id = environment2D });
             }
         }
     }
