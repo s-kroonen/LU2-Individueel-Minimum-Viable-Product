@@ -35,6 +35,13 @@ namespace WebApi.api.Repositories
                 return await sqlConnection.QuerySingleOrDefaultAsync<Object2D>("SELECT * FROM [objectTable] WHERE id = @id", new { id = object2DId });
             }
         }
+        public async Task<IEnumerable<Object2D>> ReadFormEnvironmentAsync(Guid environmentId)
+        {
+            using (var sqlConnection = new SqlConnection(sqlConnectionString))
+            {
+                return await sqlConnection.QueryAsync<Object2D>("SELECT * FROM [objectTable] WHERE EnvironmentId = @EnvironmentId", new { EnvironmentId = environmentId });
+            }
+        }
 
         public async Task<IEnumerable<Object2D>> ReadAllAsync()
         {

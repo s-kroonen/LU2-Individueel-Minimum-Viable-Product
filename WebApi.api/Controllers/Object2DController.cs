@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebApi.api.Models;
 using WebApi.api.Repositories;
 using System;
+using Microsoft.Extensions.Hosting;
 
 namespace WebApi.api.Controllers;
 
@@ -27,12 +28,16 @@ public class Object2DController : ControllerBase
         return Ok(createdObject);
     }
 
+    //[HttpGet]
+    //public async Task<IEnumerable<Object2D>> GetAllObjects2D()
+    //{
+    //    return await _object2DRepository.ReadAllAsync();
+    //}
     [HttpGet]
-    public async Task<IEnumerable<Object2D>> GetAllObjects2D()
+    public async Task<IEnumerable<Object2D>> GetObjects2DFromEnvironment(Guid environmentId)
     {
-        return await _object2DRepository.ReadAllAsync();
+        return await _object2DRepository.ReadFormEnvironmentAsync(environmentId);
     }
-
     [HttpPut("{objectId}")]
     public async Task<IActionResult> UpdateObject2D(Guid objectId, [FromBody] Object2D object2D)
     {

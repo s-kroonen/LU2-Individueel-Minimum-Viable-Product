@@ -4,7 +4,7 @@ name: Deploy ASP.NET to Custom Server
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 
