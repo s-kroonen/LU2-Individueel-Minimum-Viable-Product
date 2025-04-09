@@ -23,7 +23,7 @@ namespace WebApi.api.Repositories
 
                 object2D.EnvironmentId = environmentId;
 
-                await sqlConnection.ExecuteAsync("INSERT INTO [objectTable] (id, id, PrefabId, PositionX, PositionY, ScaleX, ScaleY, RotationZ, SortingLayer) VALUES (@id, @id, @PrefabId, @PositionX, @PositionY, @ScaleX, @ScaleY, @RotationZ, @SortingLayer)", object2D);
+                await sqlConnection.ExecuteAsync("INSERT INTO [objectTable] (id, EnvironmentId, PrefabId, PositionX, PositionY, ScaleX, ScaleY, RotationZ, SortingLayer) VALUES (@id, @EnvironmentId, @PrefabId, @PositionX, @PositionY, @ScaleX, @ScaleY, @RotationZ, @SortingLayer)", object2D);
                 return object2D;
             }
         }
