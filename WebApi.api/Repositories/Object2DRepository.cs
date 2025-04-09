@@ -16,14 +16,14 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                if (object2D.ObjectId == Guid.Empty)
+                if (object2D.id == Guid.Empty)
                 {
-                    object2D.ObjectId = Guid.NewGuid();
+                    object2D.id = Guid.NewGuid();
                 }
 
                 object2D.EnvironmentId = environmentId;
 
-                await sqlConnection.ExecuteAsync("INSERT INTO [objectTable] (ObjectId, EnvironmentId, PrefabId, PositionX, PositionY, ScaleX, ScaleY, RotationZ, SortingLayer) VALUES (@ObjectId, @EnvironmentId, @PrefabId, @PositionX, @PositionY, @ScaleX, @ScaleY, @RotationZ, @SortingLayer)", object2D);
+                await sqlConnection.ExecuteAsync("INSERT INTO [objectTable] (id, id, PrefabId, PositionX, PositionY, ScaleX, ScaleY, RotationZ, SortingLayer) VALUES (@id, @id, @PrefabId, @PositionX, @PositionY, @ScaleX, @ScaleY, @RotationZ, @SortingLayer)", object2D);
                 return object2D;
             }
         }
@@ -32,7 +32,7 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                return await sqlConnection.QuerySingleOrDefaultAsync<Object2D>("SELECT * FROM [objectTable] WHERE ObjectId = @ObjectId", new { ObjectId = object2DId });
+                return await sqlConnection.QuerySingleOrDefaultAsync<Object2D>("SELECT * FROM [objectTable] WHERE id = @id", new { ObjectId = object2DId });
             }
         }
 
@@ -56,7 +56,7 @@ namespace WebApi.api.Repositories
                                                  "ScaleY = @ScaleY, " +
                                                  "RotationZ = @RotationZ, " +
                                                  "SortingLayer = @SortingLayer " +
-                                                 "WHERE ObjectId = @ObjectId", object2D);
+                                                 "WHERE id = @id", object2D);
             }
         }
 
@@ -64,7 +64,7 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                await sqlConnection.ExecuteAsync("DELETE FROM [objectTable] WHERE ObjectId = @ObjectId", new { ObjectId = object2DId });
+                await sqlConnection.ExecuteAsync("DELETE FROM [objectTable] WHERE id = @id", new { ObjectId = object2DId });
             }
         }
     }
