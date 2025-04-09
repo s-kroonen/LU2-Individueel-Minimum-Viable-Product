@@ -32,7 +32,7 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                return await sqlConnection.QuerySingleOrDefaultAsync<Object2D>("SELECT * FROM [objectTable] WHERE id = @id", new { ObjectId = object2DId });
+                return await sqlConnection.QuerySingleOrDefaultAsync<Object2D>("SELECT * FROM [objectTable] WHERE id = @id", new { id = object2DId });
             }
         }
 
@@ -64,7 +64,7 @@ namespace WebApi.api.Repositories
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                await sqlConnection.ExecuteAsync("DELETE FROM [objectTable] WHERE id = @id", new { ObjectId = object2DId });
+                await sqlConnection.ExecuteAsync("DELETE FROM [objectTable] WHERE id = @id", new { id = object2DId });
             }
         }
     }
