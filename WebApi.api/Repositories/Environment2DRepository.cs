@@ -1,10 +1,11 @@
-﻿using Dapper;
+﻿using WebApi.api.Interfaces;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using WebApi.api.Models;
 
 namespace WebApi.api.Repositories
 {
-    public class Environment2DRepository
+    public class Environment2DRepository : IEnvironment2DRepository<Environment2D>
     {
         private readonly string sqlConnectionString;
 
@@ -38,14 +39,6 @@ namespace WebApi.api.Repositories
             }
         }
 
-        public async Task<Environment2D?> ReadAsync(string environment2DString)
-        {
-            using (var sqlConnection = new SqlConnection(sqlConnectionString))
-            {
-                Guid environment2DGuid = Guid.Parse(environment2DString);
-                return await sqlConnection.QuerySingleOrDefaultAsync<Environment2D>("SELECT * FROM [environmentTable] WHERE id = @id", new { EnvironmentId = environment2DGuid });
-            }
-        }
 
         public async Task<IEnumerable<Environment2D>> ReadByUserAsync(string userId)
         {
@@ -86,14 +79,6 @@ namespace WebApi.api.Repositories
         }
 
         public async Task DeleteAsync(Guid environment2D)
-        {
-            using (var sqlConnection = new SqlConnection(sqlConnectionString))
-            {
-                await sqlConnection.ExecuteAsync("DELETE FROM [environmentTable] WHERE id = @id", new { id = environment2D });
-            }
-        }
-
-        public async Task DeleteAsync(string environment2D)
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
